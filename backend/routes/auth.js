@@ -82,41 +82,4 @@ router.get('/admin', verifyToken, verifyAdmin, (req, res) => {
   });
 });
 
-// GET route to fetch all users (Admin-only access)
-router.get('/users', verifyToken, verifyAdmin, async (req, res) => {
-  try {
-    const users = await User.find();  // Fetch all users from the database
-    res.json(users);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
-// PUT route to update a user's role (Admin-only access)
-router.put('/update-role/:id', verifyToken, verifyAdmin, async (req, res) => {
-  const { role } = req.body;  // The new role
-  const userId = req.params.id;
-
-  try {
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { role: role },  // Update the role field
-      { new: true }  // Return the updated user
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      message: 'User role updated successfully',
-      user: updatedUser
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
-
 module.exports = router;
