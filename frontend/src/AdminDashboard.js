@@ -3,6 +3,15 @@ import axios from 'axios';
 
 function AdminDashboard() {
   const [employees, setEmployees] = useState([]);
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    position: '',
+    department: '',
+    salary: ''
+  });
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -36,8 +45,34 @@ function AdminDashboard() {
   };
 
   const handleEdit = (employee) => {
-    console.log('Edit clicked:', employee);
-    // بعداً فرم ویرایش رو اینجا باز می‌کنیم
+    setEditingEmployee(employee._id);
+    setFormData({
+      name: employee.name,
+      email: employee.email,
+      position: employee.position,
+      department: employee.department,
+      salary: employee.salary
+    });
+  };
+
+  const handleUpdate = async () => {
+    try {
+      await axios.put(`http://localhost:5000/api/employees/${editingEmployee}`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setEmployees(prev =>
+        prev.map(emp =>
+          emp._id === editingEmployee ? { ...emp, ...formData } : emp
+        )
+      );
+
+      setEditingEmployee(null);
+    } catch (err) {
+      console.error('Failed to update employee:', err);
+    }
   };
 
   return (
@@ -65,6 +100,20 @@ function AdminDashboard() {
           ))}
         </tbody>
       </table>
+
+      {editingEmployee && (
+        <div style={{ marginTop: '20px' }}>
+          <h3>Edit Employee</h3>
+          <input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Name" />
+          <input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" />
+          <input value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} placeholder="Position" />
+          <input value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} placeholder="Department" />
+          <input value={formData.salary} onChange={e => setFormData({ ...formData, salary: e.target.value })} placeholder="Salary" />
+          <br />
+          <button onClick={handleUpdate}>Save</button>
+          <button onClick={() => setEditingEmployee(null)}>Cancel</button>
+        </div>
+      )}
     </div>
   );
 }
