@@ -1,37 +1,35 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
-
 
 function Login() {
-  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
-const handleLogin = async () => {
-  try {
-    const res = await axios.post('http://localhost:5000/api/login', {
-      username,
-      password
-    });
+  const navigate = useNavigate();
 
-    localStorage.setItem('token', res.data.token);
-    const decoded = jwtDecode(res.data.token);
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post('http://localhost:5000/api/login', {
+        username,
+        password
+      });
 
-    if (decoded.role === 'admin') {
-      setMessage('Login successful! Welcome Admin!');
-    } else {
-      setMessage('Login successful! Welcome User!');
+      localStorage.setItem('token', res.data.token);
+      const decoded = jwtDecode(res.data.token);
+
+      if (decoded.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/profile');
+      }
+
+    } catch (err) {
+      setMessage('Login failed. Check your credentials.');
     }
-    navigate('/profile');
-
-  } catch (err) {
-    setMessage('Login failed. Check your credentials.');
-  }
-};
-
+  };
 
   return (
     <div>

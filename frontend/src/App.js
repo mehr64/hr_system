@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import {jwtDecode} from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 import Login from './Login';
 import Profile from './Profile';
+import AdminDashboard from './AdminDashboard';
+import AdminRoute from './AdminRoute';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -21,10 +23,18 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+
         <Route
           path="/profile"
+          element={isAuthenticated ? <Profile /> : <Navigate to="/" />}
+        />
+
+        <Route
+          path="/admin"
           element={
-            isAuthenticated ? <Profile /> : <Navigate to="/" />
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
           }
         />
       </Routes>
