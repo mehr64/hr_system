@@ -1,159 +1,127 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function AdminDashboard() {
-  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    position: '',
-    department: '',
-    salary: ''
-  });
-
-  const [newEmployee, setNewEmployee] = useState({
-    name: '',
-    email: '',
-    position: '',
-    department: '',
-    salary: ''
-  });
-  const handleLogout = () => {
-  localStorage.removeItem('token');
-  navigate('/');
-};
-
-
+  const [form, setForm] = useState({ name: '', email: '', position: '', department: '', salary: '' });
+  const [editId, setEditId] = useState(null);
+  const [message, setMessage] = useState('');
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
+
+  let username = '';
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      username = decoded.username;
+    } catch (err) {
+      console.error('Invalid token');
+    }
+  }
+
+  const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/employees', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const res = await axios.get('http://localhost:5000/api/employees', { headers });
         setEmployees(res.data);
       } catch (err) {
         console.error('Error fetching employees:', err);
       }
     };
-
     fetchEmployees();
-  }, [token]);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/');
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (editId) {
+        await axios.put(`http://localhost:5000/api/employees/${editId}`, form, { headers });
+        setMessage('Employee updated successfully.');
+      } else {
+        await axios.post('http://localhost:5000/api/employees', form, { headers });
+        setMessage('Employee added successfully.');
+      }
+      setForm({ name: '', email: '', position: '', department: '', salary: '' });
+      setEditId(null);
+      // Refresh after update/add
+      const res = await axios.get('http://localhost:5000/api/employees', { headers });
+      setEmployees(res.data);
+    } catch (err) {
+      console.error('Error saving employee:', err);
+      setMessage('Something went wrong.');
+    }
+  };
+
+  const handleEdit = (emp) => {
+    setForm(emp);
+    setEditId(emp._id);
+  };
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/employees/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      setEmployees(prev => prev.filter(emp => emp._id !== id));
+      await axios.delete(`http://localhost:5000/api/employees/${id}`, { headers });
+      setEmployees((prev) => prev.filter((e) => e._id !== id));
     } catch (err) {
-      console.error('Failed to delete employee:', err);
-    }
-  };
-
-  const handleEdit = (employee) => {
-    setEditingEmployee(employee._id);
-    setFormData({
-      name: employee.name,
-      email: employee.email,
-      position: employee.position,
-      department: employee.department,
-      salary: employee.salary
-    });
-  };
-
-  const handleUpdate = async () => {
-    try {
-      await axios.put(`http://localhost:5000/api/employees/${editingEmployee}`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      setEmployees(prev =>
-        prev.map(emp =>
-          emp._id === editingEmployee ? { ...emp, ...formData } : emp
-        )
-      );
-
-      setEditingEmployee(null);
-    } catch (err) {
-      console.error('Failed to update employee:', err);
-    }
-  };
-
-  const handleAddEmployee = async () => {
-    try {
-      await axios.post('http://localhost:5000/api/employees', newEmployee, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      setNewEmployee({
-        name: '',
-        email: '',
-        position: '',
-        department: '',
-        salary: ''
-      });
-
-      const res = await axios.get('http://localhost:5000/api/employees', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setEmployees(res.data);
-    } catch (err) {
-      console.error('Failed to add employee:', err);
+      console.error('Error deleting employee:', err);
     }
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Employee Management</h2>
-      {/*logout link*/}
-      <button onClick={handleLogout} className="btn btn-outline-danger float-end">
-         Logout
-      </button>
+    <div className="container py-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h3>👤 Welcome, {username} (Admin)</h3>
+        <button className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
+      </div>
 
-      {/* Add Employee */}
-      <div className="card mb-4">
-        <div className="card-header">Add New Employee</div>
-        <div className="card-body row g-2">
-          {['name', 'email', 'position', 'department', 'salary'].map(field => (
-            <div className="col-md-6 mb-3" key={field}>
-              <input
-                className="form-control"
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={newEmployee[field]}
-                onChange={e => setNewEmployee({ ...newEmployee, [field]: e.target.value })}
-              />
-            </div>
-          ))}
-          <div className="col-12">
-            <button className="btn btn-primary" onClick={handleAddEmployee}>
-              Add Employee
+      {message && <div className="alert alert-info">{message}</div>}
+
+      <div className="card p-4 mb-4 shadow-sm">
+        <h5 className="mb-3">{editId ? 'Edit Employee' : 'Add New Employee'}</h5>
+        <div className="row g-3">
+          <div className="col-md-6">
+            <input type="text" name="name" placeholder="Name" value={form.name} onChange={handleChange} className="form-control" />
+          </div>
+          <div className="col-md-6">
+            <input type="email" name="email" placeholder="Email" value={form.email} onChange={handleChange} className="form-control" />
+          </div>
+          <div className="col-md-6">
+            <input type="text" name="position" placeholder="Position" value={form.position} onChange={handleChange} className="form-control" />
+          </div>
+          <div className="col-md-6">
+            <input type="text" name="department" placeholder="Department" value={form.department} onChange={handleChange} className="form-control" />
+          </div>
+          <div className="col-md-6">
+            <input type="number" name="salary" placeholder="Salary" value={form.salary} onChange={handleChange} className="form-control" />
+          </div>
+          <div className="col-md-6 d-grid">
+            <button className="btn btn-primary" onClick={handleSubmit}>
+              {editId ? 'Update Employee' : 'Add Employee'}
             </button>
           </div>
         </div>
       </div>
-      
-      {/* Employee Table */}
-      <table className="table table-striped table-bordered">
+
+      <table className="table table-bordered table-hover shadow-sm">
         <thead className="table-dark">
           <tr>
             <th>Name</th><th>Email</th><th>Position</th><th>Department</th><th>Salary</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {employees.map(emp => (
+          {employees.map((emp) => (
             <tr key={emp._id}>
               <td>{emp.name}</td>
               <td>{emp.email}</td>
@@ -168,29 +136,6 @@ function AdminDashboard() {
           ))}
         </tbody>
       </table>
-
-      {/* Edit Employee */}
-      {editingEmployee && (
-        <div className="card mt-4">
-          <div className="card-header">Edit Employee</div>
-          <div className="card-body row g-2">
-            {['name', 'email', 'position', 'department', 'salary'].map(field => (
-              <div className="col-md-6 mb-3" key={field}>
-                <input
-                  className="form-control"
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  value={formData[field]}
-                  onChange={e => setFormData({ ...formData, [field]: e.target.value })}
-                />
-              </div>
-            ))}
-            <div className="col-12">
-              <button className="btn btn-success me-2" onClick={handleUpdate}>Save</button>
-              <button className="btn btn-secondary" onClick={() => setEditingEmployee(null)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
