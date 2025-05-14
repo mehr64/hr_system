@@ -109,10 +109,34 @@ function AdminDashboard() {
   };
 
   return (
-    <div>
-      <h2>Employee List</h2>
-      <table border="1" cellPadding="8">
-        <thead>
+    <div className="container mt-4">
+      <h2 className="mb-4">Employee Management</h2>
+
+      {/* Add Employee */}
+      <div className="card mb-4">
+        <div className="card-header">Add New Employee</div>
+        <div className="card-body row g-2">
+          {['name', 'email', 'position', 'department', 'salary'].map(field => (
+            <div className="col-md-6 mb-3" key={field}>
+              <input
+                className="form-control"
+                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                value={newEmployee[field]}
+                onChange={e => setNewEmployee({ ...newEmployee, [field]: e.target.value })}
+              />
+            </div>
+          ))}
+          <div className="col-12">
+            <button className="btn btn-primary" onClick={handleAddEmployee}>
+              Add Employee
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Employee Table */}
+      <table className="table table-striped table-bordered">
+        <thead className="table-dark">
           <tr>
             <th>Name</th><th>Email</th><th>Position</th><th>Department</th><th>Salary</th><th>Actions</th>
           </tr>
@@ -126,58 +150,36 @@ function AdminDashboard() {
               <td>{emp.department}</td>
               <td>{emp.salary}</td>
               <td>
-                <button onClick={() => handleEdit(emp)}>Edit</button>{' '}
-                <button onClick={() => handleDelete(emp._id)}>Delete</button>
+                <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(emp)}>Edit</button>
+                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(emp._id)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
+      {/* Edit Employee */}
       {editingEmployee && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Edit Employee</h3>
-          <input value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Name" />
-          <input value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="Email" />
-          <input value={formData.position} onChange={e => setFormData({ ...formData, position: e.target.value })} placeholder="Position" />
-          <input value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })} placeholder="Department" />
-          <input value={formData.salary} onChange={e => setFormData({ ...formData, salary: e.target.value })} placeholder="Salary" />
-          <br />
-          <button onClick={handleUpdate}>Save</button>
-          <button onClick={() => setEditingEmployee(null)}>Cancel</button>
+        <div className="card mt-4">
+          <div className="card-header">Edit Employee</div>
+          <div className="card-body row g-2">
+            {['name', 'email', 'position', 'department', 'salary'].map(field => (
+              <div className="col-md-6 mb-3" key={field}>
+                <input
+                  className="form-control"
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={formData[field]}
+                  onChange={e => setFormData({ ...formData, [field]: e.target.value })}
+                />
+              </div>
+            ))}
+            <div className="col-12">
+              <button className="btn btn-success me-2" onClick={handleUpdate}>Save</button>
+              <button className="btn btn-secondary" onClick={() => setEditingEmployee(null)}>Cancel</button>
+            </div>
+          </div>
         </div>
       )}
-
-      <div style={{ marginTop: '30px' }}>
-        <h3>Add New Employee</h3>
-        <input
-          placeholder="Name"
-          value={newEmployee.name}
-          onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })}
-        />
-        <input
-          placeholder="Email"
-          value={newEmployee.email}
-          onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })}
-        />
-        <input
-          placeholder="Position"
-          value={newEmployee.position}
-          onChange={e => setNewEmployee({ ...newEmployee, position: e.target.value })}
-        />
-        <input
-          placeholder="Department"
-          value={newEmployee.department}
-          onChange={e => setNewEmployee({ ...newEmployee, department: e.target.value })}
-        />
-        <input
-          placeholder="Salary"
-          value={newEmployee.salary}
-          onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })}
-        />
-        <br />
-        <button onClick={handleAddEmployee}>Add Employee</button>
-      </div>
     </div>
   );
 }
