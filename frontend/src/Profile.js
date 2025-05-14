@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import './Profile.css'
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function Profile() {
   const navigate = useNavigate();
@@ -18,23 +18,25 @@ function Profile() {
     }
   }
 
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/');
   };
 
   return (
-    <div className="profile-container">
-      <h2 className="profile-title">🛡️ Profile Page</h2>
-      <p className="profile-user">Welcome, {username}</p>
-      <p className="profile-user">Your role: {role}</p>
-      <hr />
-      <p>This is a protected section of the app.</p>
-      <button onClick={handleLogout} className="profile-btn">Logout</button>
+    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <div className="card p-4 shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>
+        <h4 className="text-center mb-3">🛡️ Profile Page</h4>
+        <p className="text-center fw-bold">Welcome, {username}</p>
+        <p className="text-center text-muted">Your role: {role}</p>
+        <hr />
+        <p className="text-center">This is a protected section of the app.</p>
+        <button className="btn btn-primary w-100 mt-3" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
     </div>
   );
-
 }
 
 export default Profile;

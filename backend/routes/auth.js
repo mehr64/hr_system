@@ -31,6 +31,16 @@ router.post('/register', async (req, res) => {
   }
 });
 
+router.get('/users', verifyToken, verifyAdmin, async (req, res) => {
+  try {
+    const users = await User.find({}, '-password'); 
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // LOGIN route
 router.post('/login', async (req, res) => {
   try {

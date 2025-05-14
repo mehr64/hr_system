@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState([]);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [formData, setFormData] = useState({
@@ -19,6 +21,11 @@ function AdminDashboard() {
     department: '',
     salary: ''
   });
+  const handleLogout = () => {
+  localStorage.removeItem('token');
+  navigate('/');
+};
+
 
   const token = localStorage.getItem('token');
 
@@ -111,6 +118,10 @@ function AdminDashboard() {
   return (
     <div className="container mt-4">
       <h2 className="mb-4">Employee Management</h2>
+      {/*logout link*/}
+      <button onClick={handleLogout} className="btn btn-outline-danger float-end">
+         Logout
+      </button>
 
       {/* Add Employee */}
       <div className="card mb-4">
@@ -133,7 +144,7 @@ function AdminDashboard() {
           </div>
         </div>
       </div>
-
+      
       {/* Employee Table */}
       <table className="table table-striped table-bordered">
         <thead className="table-dark">
