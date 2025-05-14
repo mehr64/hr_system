@@ -10,6 +10,8 @@ const authRoutes = require('./routes/auth');
 app.use(cors());
 app.use(express.json());
 app.use('/api', authRoutes);
+const employeeRoutes = require('./routes/employees');
+app.use('/api/employees', employeeRoutes);
 
 app.get('/', (req, res) => {
   res.send('HR System API Running');
