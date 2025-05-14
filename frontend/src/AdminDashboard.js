@@ -12,6 +12,14 @@ function AdminDashboard() {
     salary: ''
   });
 
+  const [newEmployee, setNewEmployee] = useState({
+    name: '',
+    email: '',
+    position: '',
+    department: '',
+    salary: ''
+  });
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -75,6 +83,31 @@ function AdminDashboard() {
     }
   };
 
+  const handleAddEmployee = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/employees', newEmployee, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      setNewEmployee({
+        name: '',
+        email: '',
+        position: '',
+        department: '',
+        salary: ''
+      });
+
+      const res = await axios.get('http://localhost:5000/api/employees', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEmployees(res.data);
+    } catch (err) {
+      console.error('Failed to add employee:', err);
+    }
+  };
+
   return (
     <div>
       <h2>Employee List</h2>
@@ -114,6 +147,37 @@ function AdminDashboard() {
           <button onClick={() => setEditingEmployee(null)}>Cancel</button>
         </div>
       )}
+
+      <div style={{ marginTop: '30px' }}>
+        <h3>Add New Employee</h3>
+        <input
+          placeholder="Name"
+          value={newEmployee.name}
+          onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })}
+        />
+        <input
+          placeholder="Email"
+          value={newEmployee.email}
+          onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })}
+        />
+        <input
+          placeholder="Position"
+          value={newEmployee.position}
+          onChange={e => setNewEmployee({ ...newEmployee, position: e.target.value })}
+        />
+        <input
+          placeholder="Department"
+          value={newEmployee.department}
+          onChange={e => setNewEmployee({ ...newEmployee, department: e.target.value })}
+        />
+        <input
+          placeholder="Salary"
+          value={newEmployee.salary}
+          onChange={e => setNewEmployee({ ...newEmployee, salary: e.target.value })}
+        />
+        <br />
+        <button onClick={handleAddEmployee}>Add Employee</button>
+      </div>
     </div>
   );
 }
